@@ -1,0 +1,119 @@
+package_manager: apt
+package_type: deb
+package_arch: amd64
+
+system:
+  - apt-utils
+  - curl
+  - wget
+  - software-properties-common
+    run: "sudo apt-get update -y"
+  - git
+  - fish
+    repository: fish-shell/release-3
+
+apps:
+  - nodejs
+    pre:
+      - "curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
+    post:
+      - "sudo npm install -g neovim"
+      - "sudo npm install -g tree-sitter-cli"
+      - "sudo npm install -g typescript typescript-language-server vim-language-server bash-language-server dockerfile-language-server-nodejs vscode-html-languageserver-bin vscode-json-languageserver graphql-language-service-cli"
+  - cargo
+    type: binary
+    from: curl
+    run: "curl https://sh.rustup.rs -sSf | sh -s -- -y"
+    post:
+      - "rustup component add rls rust-analysis rust-src rustfmt clippy"
+  - neovim
+    type: source
+    from: github
+    repository: neovim/neovim
+    path: $HOME/code/external/neovim
+    version_cmd: "nvim --version"
+    pre:
+      - "mkdir -p $HOME/code/external"
+    run: "make CMAKE_BUILD_TYPE=RelWithDebInfo && sudo make install"
+    depends:
+      - make
+      - cmake
+      - ninja-build
+      - gettext
+      - libtool
+      - libtool-bin
+      - autoconf
+      - automake
+      - g++
+      - pkg-config
+      - unzip
+  - firefox
+  - lazygit
+    repository: lazygit-team/release
+  - ranger
+  - tmux
+  - mpv
+  - fd
+    from: github
+    repository: sharkdp/fd
+  - bat
+    from: github
+    repository: sharkdp/bat
+  - ripgrep
+    from: github
+    repository: BurntSushi/ripgrep
+  - fzf
+    from: github
+    type: source
+    repository: junegunn/fzf
+    path: $HOME/.fzf
+    run: install --no-update-rc --no-completion --no-key-bindings
+  - fisher
+    from: curl
+    type: binary
+    version_cmd: "fish -c 'fisher --version'"
+    run: "fish -c 'curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher'"
+    post:
+      - "ln -s $(pwd)/fish/config/fish/fish_plugins ~/.config/fish"
+      - "fish -c 'fisher update'"
+  - exa
+    from: ubuntu_archive
+    repository: r/rust-exa
+    version: 0.9.0-4
+  - youtube-dl
+    from: curl
+    type: binary
+    path: $HOME/.local/bin
+    run: "curl -L https://yt-dl.org/downloads/latest/youtube-dl --create-dirs -o $HOME/.local/bin/youtube-dl && chmod a+rx $HOME/.local/bin/youtube-dl"
+    depends:
+      -  python-is-python3
+  - kitty
+    from: curl
+    type: binary
+    path: $HOME/.local/kitty.app
+    run: "curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin \launch=n"
+    pre:
+      - "wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/VictorMono/Semi-Bold/complete/Victor%20Mono%20SemiBold%20Nerd%20Font%20Complete%20Mono.ttf?raw=true"
+      - "wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/VictorMono/Semi-Bold-Italic/complete/Victor%20Mono%20SemiBold%20Italic%20Nerd%20Font%20Complete%20Mono.ttf?raw=true"
+      - "wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/VictorMono/Bold/complete/Victor%20Mono%20Bold%20Nerd%20Font%20Complete%20Mono.ttf?raw=true"
+      - "wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/VictorMono/Bold-Italic/complete/Victor%20Mono%20Bold%20Italic%20Nerd%20Font%20Complete%20Mono.ttf?raw=true"
+    post:
+      - "mkdir -p ~/.terminfo/x && ln -s ~/.local/kitty.app/share/terminfo/x/xterm-kitty ~/.terminfo/x"
+      - "sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator ~/.local/kitty.app/bin/kitty 50"
+    depends:
+      - libfontconfig1
+  - musikcube
+    from: github
+    repository: clangen/musikcube
+    release: 0.96.4
+    arch: ubuntu_focal_amd64
+    depends:
+      - libboost-system1.71.0
+      - libboost-filesystem1.71.0
+      - libboost-thread1.71.0
+      - libboost-chrono1.71.0
+      - libboost-date-time1.71.0
+      - libmicrohttpd12
+      - libev4
+      - libavcodec-extra
+      - pulseaudio
